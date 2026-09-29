@@ -3,7 +3,7 @@ name = "betting"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-requires-python = ">=3.14"
+requires-python = ">=3.12"
 dependencies = [
     "duckdb>=1.5.6",
     "httpx>=0.28.1",
@@ -30,3 +30,6 @@ dev = [
     "pytest>=9.1.1",
     "ruff>=0.16.9",
 ]
+
+[tool.uv]
+python-preference = "only-system"
