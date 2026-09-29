@@ -203,7 +203,7 @@ def fit(
         x0,
         method="L-BFGS-B",
         bounds=bounds,
-        options={"maxiter": 500},
+        options={"maxiter": 1500},
     )
 
     if not result.success:

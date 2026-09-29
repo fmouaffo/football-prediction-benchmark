@@ -18,12 +18,28 @@ BASE_URL = "https://www.football-data.co.uk/mmz4281"
 
 # Codes de division. Ajoute/retire selon les championnats qui t'intéressent.
 DIVISIONS = {
+    # Premier rang (reference)
     "E0": "Premier League",
-    "E1": "Championship",
     "F1": "Ligue 1",
     "D1": "Bundesliga",
     "I1": "Serie A",
     "SP1": "La Liga",
+    # Second rang
+    "E1": "Championship",
+    "E2": "League One",
+    "E3": "League Two",
+    "F2": "Ligue 2",
+    "D2": "2. Bundesliga",
+    "I2": "Serie B",
+    "SP2": "Segunda Division",
+    # Championnats plus petits
+    "N1": "Eredivisie",
+    "B1": "Jupiler League",
+    "P1": "Primeira Liga",
+    "T1": "Super Lig",
+    "G1": "Super League Grece",
+    "SC0": "Scottish Premiership",
+    "SC1": "Scottish Championship",
 }
 
 # Saisons a recuperer : 2010/11 -> 2025/26
@@ -76,10 +92,19 @@ def fetch_csv(division: str, year: int) -> pd.DataFrame | None:
         print(f"  [skip] {division} {year}: fichier vide ou malforme")
         return None
 
-    return df.assign(
-        season=f"{year}/{year + 1}",
-        division=division,
-        league=DIVISIONS.get(division, division),
+    return pd.concat(
+        [
+            df,
+            pd.DataFrame(
+                {
+                    "season": f"{year}/{year + 1}",
+                    "division": division,
+                    "league": DIVISIONS.get(division, division),
+                },
+                index=df.index,
+            ),
+        ],
+        axis=1,
     )
 
 
@@ -87,9 +112,12 @@ def normalise(df: pd.DataFrame) -> pd.DataFrame:
     """Aligne les colonnes, type les dates et les numeriques."""
     # Les colonnes de cotes varient selon les saisons -> on cree les manquantes
     wanted = CORE_COLS + ODDS_COLS + ["season", "division", "league"]
-    for col in wanted:
-        if col not in df.columns:
-            df[col] = pd.NA
+    missing = [c for c in wanted if c not in df.columns]
+    if missing:
+        df = pd.concat(
+            [df, pd.DataFrame(pd.NA, index=df.index, columns=missing)],
+            axis=1,
+        )
 
     df = df[wanted].copy()
 

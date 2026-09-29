@@ -197,20 +197,23 @@ def main() -> None:
     df = con.execute(
         """
         SELECT match_date, home_team, away_team, home_goals, away_goals,
-               result, psch, pscd, psca
+               result, league, psch, pscd, psca
         FROM matches
-        WHERE league = 'Premier League'
         ORDER BY match_date
         """
     ).fetchdf()
     con.close()
 
-    print(f"{len(df)} matchs charges.")
-    preds = walk_forward(df)
-    evaluate(preds)
+    all_preds = []
+    for league, sub in df.groupby("league"):
+        print(f"\n--- {league} ({len(sub)} matchs) ---")
+        p = walk_forward(sub.reset_index(drop=True))
+        p["league"] = league
+        all_preds.append(p)
 
+    preds = pd.concat(all_preds, ignore_index=True)
+    evaluate(preds)
     preds.to_parquet("data/predictions_dixon_coles.parquet", index=False)
-    print("\nPredictions sauvegardees dans data/predictions_dixon_coles.parquet")
 
 
 if __name__ == "__main__":
