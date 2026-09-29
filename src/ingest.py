@@ -76,10 +76,11 @@ def fetch_csv(division: str, year: int) -> pd.DataFrame | None:
         print(f"  [skip] {division} {year}: fichier vide ou malforme")
         return None
 
-    df["season"] = f"{year}/{year + 1}"
-    df["division"] = division
-    df["league"] = DIVISIONS.get(division, division)
-    return df
+    return df.assign(
+        season=f"{year}/{year + 1}",
+        division=division,
+        league=DIVISIONS.get(division, division),
+    )
 
 
 def normalise(df: pd.DataFrame) -> pd.DataFrame:
